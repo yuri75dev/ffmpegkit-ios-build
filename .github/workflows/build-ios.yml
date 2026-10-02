@@ -16,6 +16,9 @@ on:
       xcode:
         description: Xcode version installed on the runner image
         default: '26.6'
+      ios-target:
+        description: minimum iOS version of the libraries
+        default: '15.0'
       extra-options:
         description: extra ios.sh options, e.g. --enable-lib-libwebp
         default: ''
@@ -68,12 +71,13 @@ jobs:
       - name: build
         env:
           EXTRA_OPTIONS: ${{ inputs.extra-options }}
+          IOS_TARGET: ${{ inputs.ios-target }}
           # Homebrew ships CMake 4, which rejects soxr's cmake_minimum_required below 3.5.
           # Fixed upstream in scripts/apple/soxr.sh on the development branch, not yet in v9.0.0.
           CMAKE_POLICY_VERSION_MINIMUM: '3.5'
         run: |
           xcodebuild -version
-          ./ios.sh --xcframework --spm --target=18.0 \
+          ./ios.sh --xcframework --spm --target="${IOS_TARGET}" \
             --disable-arch-arm64e \
             --disable-arch-x86-64 \
             --disable-arch-arm64-mac-catalyst \
@@ -106,6 +110,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REF: ${{ inputs.ref }}
           XCODE: ${{ inputs.xcode }}
+          IOS_TARGET: ${{ inputs.ios-target }}
           EXTRA_OPTIONS: ${{ inputs.extra-options }}
         run: |
           mv prebuilt/bundle-apple-xcframework-ios-* FFmpegKit
@@ -113,7 +118,7 @@ jobs:
           {
             echo "Source: https://github.com/arthenica/ffmpeg-kit-next/tree/$(git rev-parse HEAD)"
             echo
-            echo "Xcode ${XCODE}, iOS 18.0+, slices arm64 and arm64-simulator. Extra options: ${EXTRA_OPTIONS:-none}."
+            echo "Xcode ${XCODE}, iOS ${IOS_TARGET}+, slices arm64 and arm64-simulator. Extra options: ${EXTRA_OPTIONS:-none}."
             echo
             echo "LGPL-3.0. FFmpeg and external library sources are fetched by the build scripts of that commit; license files are inside each xcframework."
           } > notes.md
