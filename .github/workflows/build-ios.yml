@@ -68,6 +68,9 @@ jobs:
       - name: build
         env:
           EXTRA_OPTIONS: ${{ inputs.extra-options }}
+          # Homebrew ships CMake 4, which rejects soxr's cmake_minimum_required below 3.5.
+          # Fixed upstream in scripts/apple/soxr.sh on the development branch, not yet in v9.0.0.
+          CMAKE_POLICY_VERSION_MINIMUM: '3.5'
         run: |
           xcodebuild -version
           ./ios.sh --xcframework --spm --target=18.0 \
